@@ -2,10 +2,17 @@
 
 echo 'Updating git configurations...';
 
-git config core.filemode false;
-echo '  ignored filemode changes';
+# get global defined config
+filemode=$(git config --global core.filemode)
+# set default as 'false' if not defined.
+if [ -z "${filemode}" ]
+then
+  filemode='false'
+fi;
+git config core.filemode ${filemode};
+echo "  set tracking filemode changes to [${filemode}]";
 
 git config push.default simple;
-echo '  set simple push strategy';
+echo "  set simple push strategy";
 
-echo 'Done.';
+echo "Done.";
