@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+devBranchSearch=$(git branch -r | grep origin/develop)
+if [ -n "${devBranchSearch}" ]
+then
+  echo 'Found [origin/develop] branch, using "Gitflow" workflow!';
+  echo '---------------------------------------';
+  git jc-branch -p feature/ -s develop "$@";
+  exit 0;
+fi;
+
+echo 'NOT FOUND [origin/develop] branch, using "Feature branch" workflow!';
+echo '---------------------------------------';
+
+# define main branch name: main|master
+mainBranch=master
+mainBranchSearch=$(cat .git/config | grep "branch\s\"${mainBranch}\"")
+
+if [ -z "${mainBranchSearch}" ]
+then
+    mainBranch=main;
+fi;
+
+echo "Found maturity branch [${mainBranch}]";
+echo '---------------------------------------';
+
+git jc-branch -p feature/ -s ${mainBranch} "$@";
+exit 0;
