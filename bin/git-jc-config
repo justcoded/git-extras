@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+echo 'Updating git configurations...';
+
+git config core.filemode false;
+echo '  ignored filemode changes';
+
+git config push.default simple;
+echo '  set simple push strategy';
+
+echo 'Done.';
