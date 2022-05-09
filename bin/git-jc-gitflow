@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+git fetch;
+
+echo 'Initializing gitflow long-live branches...';
+
+# define main branch name: main|master
+mainBranch=master
+mainBranchSearch=$(cat .git/config | grep "branch\s\"${mainBranch}\"")
+
+if [ -z "${mainBranchSearch}" ]
+then
+    mainBranch=main;
+fi;
+
+echo "  find maturity branch [${mainBranch}]";
+
+# find develop branch
+devBranchSearch=$(git branch -r | grep origin/develop)
+if [ -z "${devBranchSearch}" ]
+then
+    git switch -c develop origin/${mainBranch};
+    git push --set-upstream origin develop
+    echo '  created integration branch [develop]';
+else
+    echo '  found integration branch [origin/develop], syncing...';
+    git switch develop;
+    git pull;
+fi;
+
+# find release branch
+rcBranchSearch=$(git branch -r | grep origin/release)
+if [ -z "${rcBranchSearch}" ]
+then
+    git switch -c release origin/develop;
+    git push --set-upstream origin release
+    echo '  created release candidate branch [release]';
+else
+    echo '  found release candidate branch [origin/release], syncing...';
+    git switch release;
+    git pull;
+fi;
+
+# switch to develop
+echo '  switching to develop.';
+git switch develop;
+
+echo 'Done.';
