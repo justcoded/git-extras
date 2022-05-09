@@ -16,6 +16,9 @@ fi;
 echo "  find maturity branch [${mainBranch}]";
 
 # find develop branch
+echo '-----------------------------------------------';
+echo 'Checking develop branch...';
+
 devBranchSearch=$(git branch -r | grep origin/develop)
 if [ -z "${devBranchSearch}" ]
 then
@@ -29,6 +32,9 @@ else
 fi;
 
 # find release branch
+echo '-----------------------------------------------';
+echo 'Checking release branch...';
+
 rcBranchSearch=$(git branch -r | grep origin/release)
 if [ -z "${rcBranchSearch}" ]
 then
@@ -42,6 +48,9 @@ else
 fi;
 
 # switch to develop
+echo '-----------------------------------------------';
+echo 'Finalizing...';
+
 echo '  switching to develop.';
 git switch develop;
 
