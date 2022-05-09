@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# define main branch name: main|master
+mainBranch=master
+mainBranchSearch=$(cat .git/config | grep "branch\s\"${mainBranch}\"")
+
+if [ -z "${mainBranchSearch}" ]
+then
+    mainBranch=main;
+fi;
+
+echo "Found maturity branch [${mainBranch}]";
+echo '---------------------------------------';
+
+git jc-branch -p hotfix/ -s ${mainBranch} "$@"
