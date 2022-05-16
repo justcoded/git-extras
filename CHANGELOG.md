@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.2.0](https://github.com/justcoded/git-extras/compare/v1.1.0...v1.2.0) (2022-05-16)
+### Features
+
+* Added delete-submodule extra
+
+### Bug Fixes
+
+* Lk-hotfix command doesn't work
+
+
+---
+
 ## [1.1.0](https://github.com/justcoded/git-extras/compare/v1.0.0...v1.1.0) (2022-05-13)
 ### Features
 

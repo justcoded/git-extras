@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-git jc-hotfix "$@"
+git jc-branch -p hotfix/ -s master "$@"
