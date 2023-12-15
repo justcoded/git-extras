@@ -13,7 +13,7 @@ then
     mainBranch=main;
 fi;
 
-echo "  find maturity branch [${mainBranch}]";
+echo "  Found maturity branch [${mainBranch}]";
 
 # find develop branch
 echo '-----------------------------------------------';
