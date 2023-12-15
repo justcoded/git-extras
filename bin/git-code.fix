@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+function safeExit() {
+  exit 0
+}
+
+############## Default values ###################
+scriptName="git code.fix"
+scriptArgs="<path>"
+verbose=false
+version=0.2.3
+ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
+args=()
+
+############## Main Script Here ###################
+
+function handle() {
+  currDir=$(pwd)
+  currGitRoot=$(git rev-parse --show-toplevel)
+  rootDir=$currGitRoot
+
+  if $verbose; then
+    echo "Current git root: $currGitRoot"
+  fi
+
+  while [ "$(git rev-parse --show-toplevel 2>/dev/null)" ]
+  do
+    rootDir=$(git rev-parse --show-toplevel)
+
+    cd ../
+  done
+
+  cd "$currDir"
+
+  relativePath=".${currDir/#$rootDir}"
+
+  if $verbose; then
+    echo "Root dir: $rootDir"
+    echo "Current dir: $currDir"
+    echo "Relative path: $relativePath"
+  fi
+
+  if [ ! -z "${args[0]}" ]
+  then
+    for arg in "${args[@]}"; do
+      if [ -z "$path" ]; then
+        path="$relativePath/${arg}"
+      else
+        path="$path $relativePath/${arg}"
+      fi
+    done
+  else
+    path=$relativePath
+  fi;
+
+  (cd $rootDir && runEcs)
+}
+
+############## Begin Options and Usage ###################
+
+# Print usage
+usage() {
+  echo -n "${scriptName} [OPTIONS] ${scriptArgs}
+
+Checks code in current/specified directory
+
+ Options:
+  -h, --help        Display this help and exit
+"
+}
+
+runEcs() {
+  if $verbose; then
+    echo "Path: $path"
+
+    if [ "$path" != '.' ]; then
+      echo "Command: docker run -it --rm -v $rootDir:/codebase -v $rootDir/ecs.php:/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
+    else
+      echo "Command: docker run -it --rm -v $rootDir:/codebase -v $rootDir/ecs.php:/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+    fi
+  fi
+
+  if [ "$path" != '.' ]; then
+    docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
+  else
+    docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
+  fi
+}
+
+die() {
+  echo "$@" 1>&2
+  exit 1
+}
+
+# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
+# --foo bar
+optstring=h
+unset options
+while (($#)); do
+  case $1 in
+    # If option is of type -ab
+    -[!-]?*)
+      # Loop over each character starting with the second
+      for ((i=1; i < ${#1}; i++)); do
+        c=${1:i:1}
+
+        # Add current char to options
+        options+=("-$c")
+
+        # If option takes a required argument, and it's not the last char make
+        # the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+          options+=("${1:i+1}")
+          break
+        fi
+      done
+      ;;
+
+    # If option is of type --foo=bar
+    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+    # add --endopts for --
+    --) options+=(--endopts) ;;
+    # Otherwise, nothing special
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+set -- "${options[@]}"
+unset options
+
+# Print help if no arguments were passed.
+# Uncomment to force arguments when invoking the script
+# [[ $# -eq 0 ]] && set -- "--help"
+
+# Read the options and set stuff
+while [[ $1 = -?* ]]; do
+  case $1 in
+    -h|--help) usage >&2; safeExit ;;
+    -v|--verbose) verbose=true ;;
+    --endopts) shift; break ;;
+    *) die "invalid option: '$1'." ;;
+  esac
+  shift
+done
+
+# Store the remaining part as arguments.
+args+=("$@")
+
+############## End Options and Usage ###################
+
+
+############## Script Run Code ###################
+
+# Set IFS to preferred implementation
+IFS=$'\n\t'
+
+# Exit on error. Append '||true' when you run the script if you expect an error.
+set -o errexit
+
+# Bash will remember & return the highest exitcode in a chain of pipes.
+# This way you can catch the error in case mysqldump fails in `mysqldump |gzip`, for example.
+set -o pipefail
+
+# Run your script
+handle
+
+# Exit cleanly
+safeExit
