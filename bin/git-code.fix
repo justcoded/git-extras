@@ -8,7 +8,7 @@ function safeExit() {
 scriptName="git code.fix"
 scriptArgs="<path>"
 verbose=false
-version=0.2.3
+version=0.3.0
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
 args=()
 
