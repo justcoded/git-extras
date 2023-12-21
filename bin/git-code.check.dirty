@@ -5,9 +5,10 @@ function safeExit() {
 }
 
 ############## Default values ###################
-scriptName="git code.check"
+scriptName="git code.check.dirty"
 scriptArgs="<path>"
 verbose=false
+veryVerbose=false
 version=0.4.1
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
@@ -35,24 +36,46 @@ function handle() {
   cd "$currDir"
 
   relativePath=".${currDir/#$rootDir/}"
+  relativeToGitRootPath=".${currGitRoot/#$rootDir/}"
+  relativeToCurrentGitRootPath=".${currDir/#$currGitRoot/}"
+
+  mapfile -t modifiedPaths < <(git diff --name-only | grep '\.php$')
 
   if $verbose; then
     echo "Root dir: $rootDir"
     echo "Current dir: $currDir"
     echo "Relative path: $relativePath"
+    echo "Relative git root path: $relativeToGitRootPath"
+    echo "Relative to current git root path: $relativeToCurrentGitRootPath"
+    echo ""
+  fi
+
+  if $veryVerbose; then
+    echo "Modified files:"
+    printf '  %s\n' "${modifiedPaths[@]}"
+    echo ""
   fi
 
   if [ ! -z "${args[0]}" ]; then
-    for arg in "${args[@]}"; do
-      if [ -z "$path" ]; then
-        path="$relativePath/${arg}"
-      else
-        path="$path $relativePath/${arg}"
-      fi
-    done
-  else
-    path=$relativePath
+    relativeToCurrentGitRootPath="$relativeToCurrentGitRootPath/${args[0]}"
+
+    if $verbose; then
+      echo "Modified relative to current git root path: $relativeToCurrentGitRootPath"
+      echo ""
+    fi
   fi
+
+  for fileName in "${modifiedPaths[@]}"; do
+    if [[ "./$fileName" == *"$relativeToCurrentGitRootPath"* ]]; then
+      if [ -z "$path" ]; then
+        path="$relativeToGitRootPath/$fileName"
+      else
+        path="$path $relativeToGitRootPath/$fileName"
+      fi
+    elif $veryVerbose; then
+      echo "Skipped $fileName"
+    fi
+  done
 
   (cd $rootDir && runEcs)
 }
@@ -63,10 +86,11 @@ function handle() {
 usage() {
   echo -n "${scriptName} [OPTIONS] ${scriptArgs}
 
-Check code in current/specified directory
+Check modified code in current/specified directory
 
  Options:
   -v, --verbose         Display debug info
+  -V, --very-verbose    Display more debug info
   -h, --help            Display this help and exit
 "
 }
@@ -169,6 +193,7 @@ while [[ $1 = -?* ]]; do
     safeExit
     ;;
   -v | --verbose) verbose=true ;;
+  -V | --very-verbose) verbose=true veryVerbose=true ;;
   --endopts)
     shift
     break
