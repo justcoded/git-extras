@@ -8,13 +8,16 @@ function safeExit() {
 scriptName="git code.fix"
 scriptArgs="<path>"
 verbose=false
-version=0.2.3
+version=0.4.1
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
+#ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
 
 ############## Main Script Here ###################
 
 function handle() {
+  greeting
+
   currDir=$(pwd)
   currGitRoot=$(git rev-parse --show-toplevel)
   rootDir=$currGitRoot
@@ -23,8 +26,7 @@ function handle() {
     echo "Current git root: $currGitRoot"
   fi
 
-  while [ "$(git rev-parse --show-toplevel 2>/dev/null)" ]
-  do
+  while [ "$(git rev-parse --show-toplevel 2>/dev/null)" ]; do
     rootDir=$(git rev-parse --show-toplevel)
 
     cd ../
@@ -32,7 +34,7 @@ function handle() {
 
   cd "$currDir"
 
-  relativePath=".${currDir/#$rootDir}"
+  relativePath=".${currDir/#$rootDir/}"
 
   if $verbose; then
     echo "Root dir: $rootDir"
@@ -40,8 +42,7 @@ function handle() {
     echo "Relative path: $relativePath"
   fi
 
-  if [ ! -z "${args[0]}" ]
-  then
+  if [ ! -z "${args[0]}" ]; then
     for arg in "${args[@]}"; do
       if [ -z "$path" ]; then
         path="$relativePath/${arg}"
@@ -51,7 +52,7 @@ function handle() {
     done
   else
     path=$relativePath
-  fi;
+  fi
 
   (cd $rootDir && runEcs)
 }
@@ -62,29 +63,59 @@ function handle() {
 usage() {
   echo -n "${scriptName} [OPTIONS] ${scriptArgs}
 
-Checks code in current/specified directory
+Fix code in current/specified directory
 
  Options:
-  -h, --help        Display this help and exit
+  -b, --branch          Specify branch to compare
+  -v, --verbose         Display debug info
+  -V, --very-verbose    Display more debug info
+  -h, --help            Display this help and exit
 "
 }
 
 runEcs() {
   if $verbose; then
+    echo ''
     echo "Path: $path"
+    echo ''
 
     if [ "$path" != '.' ]; then
-      echo "Command: docker run -it --rm -v $rootDir:/codebase -v $rootDir/ecs.php:/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
+      if [ -f "$rootDir/ecs.php" ]; then
+        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
+      else
+        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
+      fi
     else
-      echo "Command: docker run -it --rm -v $rootDir:/codebase -v $rootDir/ecs.php:/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+      if [ -f "$rootDir/ecs.php" ]; then
+        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+      else
+        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+      fi
     fi
+
+    echo ''
   fi
 
   if [ "$path" != '.' ]; then
-    docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
+    if [ -f "$rootDir/ecs.php" ]; then
+      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
+    else
+      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
+    fi
   else
-    docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
+    if [ -f "$rootDir/ecs.php" ]; then
+      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
+    else
+      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
+    fi
   fi
+}
+
+greeting() {
+  BRed='\033[1;31m'
+  NC='\033[0m' # No Color
+  echo -e "${BRed}JustCoded PHP Code Analysis Tool v${version}${NC}"
+  echo ''
 }
 
 die() {
@@ -98,30 +129,30 @@ optstring=h
 unset options
 while (($#)); do
   case $1 in
-    # If option is of type -ab
-    -[!-]?*)
-      # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
-        c=${1:i:1}
+  # If option is of type -ab
+  -[!-]?*)
+    # Loop over each character starting with the second
+    for ((i = 1; i < ${#1}; i++)); do
+      c=${1:i:1}
 
-        # Add current char to options
-        options+=("-$c")
+      # Add current char to options
+      options+=("-$c")
 
-        # If option takes a required argument, and it's not the last char make
-        # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
-          options+=("${1:i+1}")
-          break
-        fi
-      done
-      ;;
+      # If option takes a required argument, and it's not the last char make
+      # the rest of the string its argument
+      if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        options+=("${1:i+1}")
+        break
+      fi
+    done
+    ;;
 
-    # If option is of type --foo=bar
-    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
-    # add --endopts for --
-    --) options+=(--endopts) ;;
-    # Otherwise, nothing special
-    *) options+=("$1") ;;
+  # If option is of type --foo=bar
+  --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+  # add --endopts for --
+  --) options+=(--endopts) ;;
+  # Otherwise, nothing special
+  *) options+=("$1") ;;
   esac
   shift
 done
@@ -135,10 +166,16 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; safeExit ;;
-    -v|--verbose) verbose=true ;;
-    --endopts) shift; break ;;
-    *) die "invalid option: '$1'." ;;
+  -h | --help)
+    usage >&2
+    safeExit
+    ;;
+  -v | --verbose) verbose=true ;;
+  --endopts)
+    shift
+    break
+    ;;
+  *) die "invalid option: '$1'." ;;
   esac
   shift
 done
@@ -147,7 +184,6 @@ done
 args+=("$@")
 
 ############## End Options and Usage ###################
-
 
 ############## Script Run Code ###################
 

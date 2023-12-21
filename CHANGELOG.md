@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.3.0](https://github.com/justcoded/git-extras/compare/v1.2.0...v1.3.0) (2023-12-21)
+### Features
+
+##### Php-code-analysis-tool
+
+* Add all set of code analysis commands: 
+  * `code.check`
+  * `code.fix`
+  * `code.check.dirty`
+  * `code.fix.dirty`
+  * `code.check.diff`
+  * `code.fix.diff`
+  * `code.config.publish`
+
+##### Extras
+
+* Add command to update git-extras commands: `extras.update`
+
+
+---
+
 ## [1.2.0](https://github.com/justcoded/git-extras/compare/v1.1.0...v1.2.0) (2022-05-16)
 ### Features
 

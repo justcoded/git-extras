@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+echo 'Updating git extras...';
+
+pwd=$(pwd)
+
+cd ~
+
+if [ ! -d "git-extras" ]; then
+  git clone git@github.com:justcoded/git-extras.git
+fi
+
+cd "git-extras"
+git pull origin
+
+make install
+
+cd "$pwd"
+
+echo "Done.";
