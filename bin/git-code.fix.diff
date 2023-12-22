@@ -10,7 +10,7 @@ scriptArgs="<path>"
 branch=develop
 verbose=false
 veryVerbose=false
-version=0.4.1
+version=0.4.2
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -100,6 +100,10 @@ Fix modified code comparing to specified branch (-b) in current/specified direct
 }
 
 runEcs() {
+  if [[ "$path" == '.' && -d "$rootDir/src" ]]; then
+    path='src'
+  fi
+
   if $verbose; then
     echo ''
     echo "Path: $path"
