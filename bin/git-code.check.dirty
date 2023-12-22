@@ -69,8 +69,11 @@ function handle() {
     if [[ "./$fileName" == *"$relativeToCurrentGitRootPath"* ]]; then
       if [ -z "$path" ]; then
         path="$relativeToGitRootPath/$fileName"
+        path="${path#"./"}"
       else
-        path="$path $relativeToGitRootPath/$fileName"
+        subPath="$relativeToGitRootPath/$fileName"
+        subPath="${subPath#"./"}"
+        path="$path $subPath"
       fi
     elif $veryVerbose; then
       echo "Skipped $fileName"
