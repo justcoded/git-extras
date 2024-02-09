@@ -67,6 +67,12 @@ function handle() {
   (cd $rootDir && runEcs)
 
   # Fix file permissions
+  if $veryVerbose; then
+    echo "sudo chown -R $uid:$gid ./"
+  fi
+
+  (cd $rootDir && sudo chown -R $uid:$gid ./)
+
   mapfile -t modifiedAfterPaths < <(git diff --name-only | grep '\.php$')
 
   if $veryVerbose; then
@@ -97,14 +103,6 @@ function handle() {
     printf '  %s\n' "${modifiedPaths[@]}"
     echo ""
   fi
-
-  for fileName in "${modifiedPaths[@]}"; do
-    if $veryVerbose; then
-      echo "chown $uid:$gid $fileName"
-    fi
-
-    (cd "$currGitRoot" && chown $uid:$gid $fileName)
-  done
 }
 
 ############## Begin Options and Usage ###################
