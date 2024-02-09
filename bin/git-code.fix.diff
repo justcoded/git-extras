@@ -10,7 +10,7 @@ scriptArgs="<path>"
 branch=develop
 verbose=false
 veryVerbose=false
-version=0.4.2
+version=0.5.0
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -43,6 +43,19 @@ function handle() {
 
   mapfile -t modifiedPaths < <(git diff --name-only --diff-filter=ACMRTUXB "${gitDiffRange}" | grep '\.php$')
 
+  # Associative array to store UID and GID information
+  declare -A modifiedFileOwners
+
+  for fileName in "${modifiedPaths[@]}"; do
+    if [ "$(uname)" == "Darwin" ]; then
+       # macOS
+       modifiedFileOwners["$fileName"]=$(cd $currGitRoot && stat -f "%u:%g" "$fileName")
+    else
+       # Ubuntu and other Linux distributions
+       modifiedFileOwners["$fileName"]=$(cd $currGitRoot && stat -c "%u:%g" "$fileName")
+    fi
+  done
+
   if $verbose; then
     echo "Root dir: $rootDir"
     echo "Current dir: $currDir"
@@ -55,7 +68,7 @@ function handle() {
 
   if $veryVerbose; then
     echo "Modified files:"
-    printf '  %s\n' "${modifiedPaths[@]}"
+    paste <(printf "%s\n" "${modifiedFileOwners[@]}") <(printf "%s\n" "${!modifiedFileOwners[@]}")
     echo ""
   fi
 
@@ -83,7 +96,17 @@ function handle() {
     fi
   done
 
+  # Run code fix
   (cd $rootDir && runEcs)
+
+  # Fix file permissions
+  for fileName in "${!modifiedFileOwners[@]}"; do
+    if $veryVerbose; then
+      echo "chown ${modifiedFileOwners[$fileName]} $fileName"
+    fi
+
+    (cd "$currGitRoot" && chown ${modifiedFileOwners[$fileName]} $fileName)
+  done
 }
 
 ############## Begin Options and Usage ###################
@@ -107,41 +130,29 @@ runEcs() {
     path='src'
   fi
 
+  if [ "$path" != '.' ]; then
+    if [ -f "$rootDir/ecs.php" ]; then
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
+    else
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
+    fi
+  else
+    if [ -f "$rootDir/ecs.php" ]; then
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+    else
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
+    fi
+  fi
+
   if $verbose; then
     echo ''
     echo "Path: $path"
     echo ''
-
-    if [ "$path" != '.' ]; then
-      if [ -f "$rootDir/ecs.php" ]; then
-        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path\""
-      else
-        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
-      fi
-    else
-      if [ -f "$rootDir/ecs.php" ]; then
-        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
-      else
-        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php\""
-      fi
-    fi
-
+    echo "$cmd"
     echo ''
   fi
 
-  if [ "$path" != '.' ]; then
-    if [ -f "$rootDir/ecs.php" ]; then
-      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
-    else
-      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php $path"
-    fi
-  else
-    if [ -f "$rootDir/ecs.php" ]; then
-      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
-    else
-      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --fix --config /app/ecs.php"
-    fi
-  fi
+  eval $cmd
 }
 
 greeting() {
