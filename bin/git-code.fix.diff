@@ -20,6 +20,9 @@ args=()
 function handle() {
   greeting
 
+  uid=$(id -u)
+  gid=$(id -g)
+
   currDir=$(pwd)
   currGitRoot=$(git rev-parse --show-toplevel)
   rootDir=$currGitRoot
@@ -43,19 +46,6 @@ function handle() {
 
   mapfile -t modifiedPaths < <(git diff --name-only --diff-filter=ACMRTUXB "${gitDiffRange}" | grep '\.php$')
 
-  # Associative array to store UID and GID information
-  declare -A modifiedFileOwners
-
-  for fileName in "${modifiedPaths[@]}"; do
-    if [ "$(uname)" == "Darwin" ]; then
-       # macOS
-       modifiedFileOwners["$fileName"]=$(cd $currGitRoot && stat -f "%u:%g" "$fileName")
-    else
-       # Ubuntu and other Linux distributions
-       modifiedFileOwners["$fileName"]=$(cd $currGitRoot && stat -c "%u:%g" "$fileName")
-    fi
-  done
-
   if $verbose; then
     echo "Root dir: $rootDir"
     echo "Current dir: $currDir"
@@ -68,7 +58,7 @@ function handle() {
 
   if $veryVerbose; then
     echo "Modified files:"
-    paste <(printf "%s\n" "${modifiedFileOwners[@]}") <(printf "%s\n" "${!modifiedFileOwners[@]}")
+    printf '  %s\n' "${modifiedPaths[@]}"
     echo ""
   fi
 
@@ -100,13 +90,11 @@ function handle() {
   (cd $rootDir && runEcs)
 
   # Fix file permissions
-  for fileName in "${!modifiedFileOwners[@]}"; do
-    if $veryVerbose; then
-      echo "chown ${modifiedFileOwners[$fileName]} $fileName"
-    fi
+  if $veryVerbose; then
+    echo "sudo chown -R $uid:$gid ./"
+  fi
 
-    (cd "$currGitRoot" && chown ${modifiedFileOwners[$fileName]} $fileName)
-  done
+  (cd $rootDir && sudo chown -R $uid:$gid ./)
 }
 
 ############## Begin Options and Usage ###################
