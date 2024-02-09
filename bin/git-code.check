@@ -8,7 +8,7 @@ function safeExit() {
 scriptName="git code.check"
 scriptArgs="<path>"
 verbose=false
-version=0.4.2
+version=0.4.3
 ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -79,41 +79,29 @@ runEcs() {
     path='src'
   fi
 
+  if [ "$path" != '.' ]; then
+    if [ -f "$rootDir/ecs.php" ]; then
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
+    else
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
+    fi
+  else
+    if [ -f "$rootDir/ecs.php" ]; then
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
+    else
+      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
+    fi
+  fi
+
   if $verbose; then
     echo ''
     echo "Path: $path"
     echo ''
-
-    if [ "$path" != '.' ]; then
-      if [ -f "$rootDir/ecs.php" ]; then
-        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
-      else
-        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path"
-      fi
-    else
-      if [ -f "$rootDir/ecs.php" ]; then
-        echo "docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
-      else
-        echo "docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
-      fi
-    fi
-
+    echo "$cmd"
     echo ''
   fi
 
-  if [ "$path" != '.' ]; then
-    if [ -f "$rootDir/ecs.php" ]; then
-      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path"
-    else
-      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path"
-    fi
-  else
-    if [ -f "$rootDir/ecs.php" ]; then
-      docker run -it --rm -v "$rootDir":/codebase -v "$rootDir/ecs.php":/app/ecs.php $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --config /app/ecs.php"
-    else
-      docker run -it --rm -v "$rootDir":/codebase $ecsImage bash -c "/root/.composer/vendor/bin/ecs check --config /app/ecs.php"
-    fi
-  fi
+  eval $cmd
 }
 
 greeting() {
