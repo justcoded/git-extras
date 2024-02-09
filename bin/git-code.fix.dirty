@@ -100,7 +100,7 @@ function handle() {
   (cd $rootDir && runEcs)
 
   # Fix file permissions
-  for fileName in "${modifiedPaths[@]}"; do
+  for fileName in "${!modifiedFileOwners[@]}"; do
     if $veryVerbose; then
       echo "chown ${modifiedFileOwners[$fileName]} $fileName"
     fi

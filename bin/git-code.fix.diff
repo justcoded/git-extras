@@ -46,7 +46,7 @@ function handle() {
   # Associative array to store UID and GID information
   declare -A modifiedFileOwners
 
-  for fileName in "${modifiedPaths[@]}"; do
+  for fileName in "${!modifiedFileOwners[@]}"; do
     if [ "$(uname)" == "Darwin" ]; then
        # macOS
        modifiedFileOwners["$fileName"]=$(cd $currGitRoot && stat -f "%u:%g" "$fileName")
