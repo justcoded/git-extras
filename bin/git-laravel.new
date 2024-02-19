@@ -23,7 +23,7 @@ make init.dev install
 
 echo 'Done.';
 
-if [[ directory != "." ]]
+if [[ $directory != "." ]]
 then
   echo "Don't forget to run cd $directory";
 fi
