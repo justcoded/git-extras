@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.4.0](https://github.com/justcoded/git-extras/compare/v1.3.0...v1.4.0) (2024-02-16)
+### Features
+
+* Update file permissions after .fix commands
+
+##### Extras
+
+* Support running dirty commands in git pre-commit hook
+
+
+---
+
 ## [1.3.0](https://github.com/justcoded/git-extras/compare/v1.2.0...v1.3.0) (2023-12-21)
 ### Features
 
