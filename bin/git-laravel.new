@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+repo=git@bitbucket.org:justcoded/laravel-boilerplate-with-docker.git
+branch=scratch-setup
+
+if [[ $1 == "" ]]
+then
+    directory="."
+else
+    directory=$1
+fi
+
+echo 'Creating new Laravel project...';
+
+git clone -b "$branch" --single-branch "$repo" "$directory"
+
+if [[ directory != "." ]]
+then
+    cd "$directory"
+fi
+
+make init.dev install
+
+echo 'Done.';
+
+if [[ directory != "." ]]
+then
+  echo "Don't forget to run cd $directory";
+fi
