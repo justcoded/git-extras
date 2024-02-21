@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.4.0](https://github.com/justcoded/git-extras/compare/v1.3.0...v1.4.0) (2024-02-21)
+### Features
+
+* Pre-commit hook friendly commands. Use ghcr image
+* Update file permissions after .fix commands
+
+### Bug Fixes
+
+* Fix code.dirty does not see staged changes. Add missing tty handling for code. commands.
+* Laravel.new final condition
+* Update whole codebase ownership
+
+##### Extras
+
+* Support running dirty commands in git pre-commit hook
+
+
+---
+
 ## [1.4.0](https://github.com/justcoded/git-extras/compare/v1.3.0...v1.4.0) (2024-02-16)
 ### Features
 
