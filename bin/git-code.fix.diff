@@ -10,7 +10,8 @@ scriptArgs="<path>"
 branch=develop
 verbose=false
 veryVerbose=false
-version=0.5.3
+fixPermissions=true
+version=0.5.4
 ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -94,11 +95,13 @@ function handle() {
   (cd $rootDir && runEcs)
 
   # Fix file permissions
-  if $veryVerbose; then
-    echo "sudo chown -R $uid:$gid ./"
-  fi
+  if $fixPermissions; then
+    if $veryVerbose; then
+      echo "sudo chown -R $uid:$gid ./"
+    fi
 
-  (cd $rootDir && sudo chown -R $uid:$gid ./)
+    (cd $rootDir && sudo chown -R $uid:$gid ./)
+  fi
 }
 
 ############## Begin Options and Usage ###################
@@ -110,10 +113,11 @@ usage() {
 Fix modified code comparing to specified branch (-b) in current/specified directory
 
  Options:
-  -b, --branch          Specify branch to compare
-  -v, --verbose         Display debug info
-  -V, --very-verbose    Display more debug info
-  -h, --help            Display this help and exit
+  -b, --branch            Specify branch to compare
+  -v, --verbose           Display debug info
+  -V, --very-verbose      Display more debug info
+  -P, --no-permission-fix Do no run permission fix
+  -h, --help              Display this help and exit
 "
 }
 
@@ -215,6 +219,7 @@ while [[ $1 = -?* ]]; do
     ;;
   -v | --verbose) verbose=true ;;
   -V | --very-verbose) verbose=true veryVerbose=true ;;
+  -P | --no-permission-fix) fixPermissions=false;;
   # Set the branch option value
   -b | --branch)
     shift # Move to the next argument
