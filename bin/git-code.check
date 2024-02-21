@@ -8,7 +8,7 @@ function safeExit() {
 scriptName="git code.check"
 scriptArgs="<path>"
 verbose=false
-version=0.5.1
+version=0.5.2
 ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -79,17 +79,24 @@ runEcs() {
     path='src'
   fi
 
+  dockerTty=''
+  if [ -t 0 ] ; then
+    dockerTty='-t'
+  fi;
+
+  dockerCmd="docker run -i $dockerTty --rm"
+
   if [ "$path" != '.' ]; then
     if [ -f "$rootDir/ecs.php" ]; then
-      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
+      cmd="$dockerCmd -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
     else
-      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
+      cmd="$dockerCmd -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php $path\""
     fi
   else
     if [ -f "$rootDir/ecs.php" ]; then
-      cmd="docker run -it --rm -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
+      cmd="$dockerCmd -v \"$rootDir\":/codebase -v \"$rootDir/ecs.php\":/app/ecs.php $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
     else
-      cmd="docker run -it --rm -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
+      cmd="$dockerCmd -v \"$rootDir\":/codebase $ecsImage bash -c \"/root/.composer/vendor/bin/ecs check --config /app/ecs.php\""
     fi
   fi
 
