@@ -8,7 +8,7 @@ function safeExit() {
 scriptName="git code.check"
 scriptArgs="<path>"
 verbose=false
-version=0.5.4
+version=0.5.5
 ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
