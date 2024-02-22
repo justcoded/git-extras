@@ -45,7 +45,7 @@ function handle() {
   relativeToGitRootPath=".${currGitRoot/#$rootDir/}"
   relativeToCurrentGitRootPath=".${currDir/#$currGitRoot/}"
 
-  mapfile -t modifiedPaths < <(git diff HEAD --name-only | grep '\.php$')
+  mapfile -t modifiedPaths < <(git diff --name-only --diff-filter=ACMRTUXB HEAD | grep '\.php$')
 
   if $verbose; then
     echo "Root dir: $rootDir"
