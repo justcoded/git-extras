@@ -35,3 +35,4 @@ make install
 | `git code.fix.diff`                 | Fix modified code compared to specified branch in current or specified path. Usage: `git code.fix.diff` / `git code.fix.diff -b master src/app tests`.       |
 | `git code.config.publish`           | Publish `ecs.php` config file to modify rules.                                                                                                               |
 | `git extras.update`                 | Update installed git-extras command.                                                                                                                         |
+| `git laravel.new <name>`            | Create new laravel project (beta).                                                                                                                           |

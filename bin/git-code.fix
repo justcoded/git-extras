@@ -10,7 +10,7 @@ scriptArgs="<path>"
 verbose=false
 veryVerbose=false
 fixPermissions=true
-version=0.5.5
+version=0.5.6
 ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -67,14 +67,7 @@ function handle() {
   # Run code fix
   (cd $rootDir && runEcs)
 
-  # Fix file permissions
-  if $fixPermissions; then
-    if $veryVerbose; then
-      echo "sudo chown -R $uid:$gid ./"
-    fi
-
-    (cd $rootDir && sudo chown -R $uid:$gid ./)
-  fi
+  fixPermissions
 
   mapfile -t modifiedAfterPaths < <(git diff --name-only | grep '\.php$')
 
@@ -159,6 +152,24 @@ runEcs() {
   fi
 
   eval $cmd
+}
+
+fixPermissions() {
+  if ! $fixPermissions; then
+    return 0
+  fi
+
+  chownPath=./
+
+  if [ -d "$rootDir/src" ]; then
+    chownPath='./src'
+  fi
+
+  if $veryVerbose; then
+    echo "sudo chown -R $uid:$gid $chownPath"
+  fi
+
+  (cd $rootDir && sudo chown -R $uid:$gid $chownPath)
 }
 
 greeting() {
