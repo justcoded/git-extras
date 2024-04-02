@@ -10,7 +10,7 @@ scriptArgs="<path>"
 verbose=false
 veryVerbose=false
 fixPermissions=true
-version=0.5.6
+version=0.5.7
 ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
@@ -165,11 +165,24 @@ fixPermissions() {
     chownPath='./src'
   fi
 
+  # List of subdirectories to exclude
+  excludeSubdirectories=("runtime" "src/runtime" "boilerplate/runtime")
+
+  # Build find command to list all directories except excluded ones
+  chownCmd="find $chownPath -type d ! -name . -prune ! "
+
+  for subdir in "${excludeSubdirectories[@]}"; do
+      chownCmd+=" -name $subdir ! -prune ! "
+  done
+
+  # Append the chown command to the find command
+  chownCmd+=" -exec sudo chown $uid:$gid {} +"
+
   if $veryVerbose; then
-    echo "sudo chown -R $uid:$gid $chownPath"
+    echo "Running '$chownCmd'"
   fi
 
-  (cd $rootDir && sudo chown -R $uid:$gid $chownPath)
+  (cd $rootDir && eval "$chownCmd")
 }
 
 greeting() {
