@@ -166,7 +166,7 @@ fixPermissions() {
   fi
 
   if [ -d "$rootDir/boilerplate/src" ]; then
-    chownPath='./src'
+    chownPath='./boilerplate/src'
   fi
 
   if $veryVerbose; then
