@@ -11,14 +11,14 @@ find_plop_json() {
     current_dir=$(dirname "$current_dir")
   done
 
-  echo "Error: .plop.json not found"
-  return 1
+  return 1  # Return 1 if not found, no print
 }
 
 plop_json_path=$(find_plop_json)
 
-if [ "$plop_json_path" == "Error: .plop.json not found" ]; then
-  echo "$plop_json_path"
+# Check if .plop.json was found
+if [ -z "$plop_json_path" ]; then
+  echo "Error: .plop.json not found"
   exit 1
 fi
 
@@ -30,12 +30,18 @@ workdir=$(jq -r '.workdir' "$plop_json_path")
 src_dir="$plop_json_dir/$src"
 workdir_dir="$plop_json_dir/$workdir"
 
-echo "Source directory: $src_dir"
-echo "Working directory: $workdir_dir"
-
-if [ ! -f "$plop_json_dir/package.json" ]; then
-  echo "Error: package.json not found in $plop_json_dir"
+# Check for package.json and plopfile in src directory
+if [ ! -f "$src_dir/package.json" ] || { [ ! -f "$src_dir/plopfile.js" ] && [ ! -f "$src_dir/plopfile.ts" ]; }; then
+  echo "Unable to find plopfile at [$src_dir]"
   exit 1
 fi
 
-docker run -it --rm -v "$plop_json_dir:/usr/src/app" -v "$src_dir:/usr/src/src" -v "$workdir_dir:/usr/src/modules" plop_plop:latest bash -c "npm run plop"
+echo "Found plopfile: [$src_dir/plopfile.js or plopfile.ts]"
+echo "Run plop with codebase: [$workdir_dir]"
+
+# Run Docker with the updated mounts and env variable
+docker run -it --rm \
+  -v "$src_dir:/plop" \
+  -v "$workdir_dir:/codebase" \
+  -e CODEBASE_DIR="$workdir_dir" \
+  plop_plop:latest bash -c "npm run plop"
