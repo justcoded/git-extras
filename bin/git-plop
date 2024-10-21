@@ -36,7 +36,7 @@ if [ ! -f "$src_dir/package.json" ] || { [ ! -f "$src_dir/plopfile.js" ] && [ ! 
   exit 1
 fi
 
-echo "Found plopfile: [$src_dir/plopfile.js or plopfile.ts]"
+echo "Found plopfile: [$src_dir/plopfile.*]"
 echo "Run plop with codebase: [$workdir_dir]"
 
 # Run Docker with the updated mounts and env variable
@@ -44,4 +44,4 @@ docker run -it --rm \
   -v "$src_dir:/plop" \
   -v "$workdir_dir:/codebase" \
   -e CODEBASE_DIR="$workdir_dir" \
-  plop_plop:latest bash -c "npm run plop"
+  ghcr.io/justcoded/plopjs:0.1.0
