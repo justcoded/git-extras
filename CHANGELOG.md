@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.5.0](https://github.com/justcoded/git-extras/compare/v1.3.0...v1.5.0) (2024-10-22)
+### Features
+
+* :sparkles: add git-plop
+
+##### Whp
+
+* Add whp to git extras
+
+##### Code
+
+* Allow to disable permission fix. Bump version
+* Do not override runtime directory group/user
+* Fix deleted files causes error in code.dirty* commands
+* Fix file permissions was not applied to modules
+* Support running dirty commands in git pre-commit hook
+
+
+---
+
 ## [1.4.0](https://github.com/justcoded/git-extras/compare/v1.3.0...v1.4.0) (2024-02-21)
 ### Features
 

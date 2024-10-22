@@ -49,5 +49,7 @@ docker run -it --rm \
   -v "$src_dir:/plop" \
   -v "$workdir_dir:/codebase" \
   -e CODEBASE_DIR="$workdir_dir" \
-  -e CODEBASE_MODULE="$module_name" \
+  -e CODEBASE_LK_MODULE="$module_name" \
   ghcr.io/justcoded/plopjs:0.1.0
+
+chown -R "$(whoami)":"$(whoami)" "$(pwd)"
