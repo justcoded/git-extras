@@ -29,6 +29,10 @@ workdir=$(jq -r '.workdir' "$plop_json_path")
 
 src_dir="$plop_json_dir/$src"
 workdir_dir="$plop_json_dir/$workdir"
+workdir_parent_dir=$(dirname "$workdir_dir")
+relative_wordir_pwd=$(realpath --relative-to="$workdir_parent_dir" "$PWD")
+module_path=$(echo "$relative_wordir_pwd" | grep -oE '(/?modules/)[^/]+')
+module_name=$(basename "$module_path")
 
 # Check for package.json and plopfile in src directory
 if [ ! -f "$src_dir/package.json" ] || { [ ! -f "$src_dir/plopfile.js" ] && [ ! -f "$src_dir/plopfile.ts" ]; }; then
@@ -38,10 +42,12 @@ fi
 
 echo "Found plopfile: [$src_dir/plopfile.*]"
 echo "Run plop with codebase: [$workdir_dir]"
+echo "Module name: [$module_name]"
 
 # Run Docker with the updated mounts and env variable
 docker run -it --rm \
   -v "$src_dir:/plop" \
   -v "$workdir_dir:/codebase" \
   -e CODEBASE_DIR="$workdir_dir" \
+  -e CODEBASE_MODULE="$module_name" \
   ghcr.io/justcoded/plopjs:0.1.0
