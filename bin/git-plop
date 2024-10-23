@@ -53,4 +53,4 @@ docker run -it --rm \
   -e CODEBASE_LK_MODULE="$module_name" \
   ghcr.io/justcoded/plopjs:0.1.0
 
-chown -R "$(whoami)":"$(whoami)" "$(pwd)"
+sudo chown -R "$(whoami)":"$(whoami)" "$(pwd)"
