@@ -48,7 +48,8 @@ echo "Module name: [$module_name]"
 docker run -it --rm \
   -v "$src_dir:/plop" \
   -v "$workdir_dir:/codebase" \
-  -e CODEBASE_DIR="$workdir_dir" \
+  -e CODEBASE_DIR="/codebase" \
+  -e CODEBASE_ORIGIN_DIR="$workdir_dir" \
   -e CODEBASE_LK_MODULE="$module_name" \
   ghcr.io/justcoded/plopjs:0.1.0
 
