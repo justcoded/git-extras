@@ -55,3 +55,5 @@ docker run -it --rm \
   -e CODEBASE_ORIGIN_DIR="$workdir_dir" \
   -e CODEBASE_LK_MODULE="$module_name" \
   $dckrEnvs ghcr.io/justcoded/plopjs:0.2.0
+
+sudo chown -R "$(whoami)":"$(whoami)" "$(pwd)"
