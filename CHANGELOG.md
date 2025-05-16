@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.7.2](https://github.com/justcoded/git-extras/compare/v1.7.1...v1.7.2) (2025-05-16)
+### Bug Fixes
+
+
+##### Plop
+
+* Bump plop image version to 0.5.0
+
+
+---
+
 ## [1.7.1](https://github.com/justcoded/git-extras/compare/v1.6.0...v1.7.0) (2025-05-14)
 ### Features
 
