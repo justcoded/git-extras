@@ -6,8 +6,8 @@ function safeExit() {
 
 ############## Default values ###################
 scriptName="git code.config.publish"
-version=0.4.1
-ecsImage=hub.jcdev.net:24000/php-code-analysis-tool:${version}
+version=1.0.0
+ecsImage=ghcr.io/justcoded/php-code-analysis:${version}
 #ecsImage=docker.io/library/dockerize-php-code-analysis-php-code-analysis-tool
 args=()
 
