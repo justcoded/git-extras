@@ -31,8 +31,6 @@ function handle() {
     echo "Current git root: $currGitRoot"
   fi
 
-  cd "$currGitDir"
-
   while [ ! -d "$rootDir/.git" ]; do
     cd ..
     rootDir=$(pwd)
