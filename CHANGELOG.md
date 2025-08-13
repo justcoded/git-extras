@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 <!--- END HEADER -->
 
+## [1.7.3](https://github.com/justcoded/git-extras/compare/v1.7.2...v1.7.3) (2025-08-13)
+### Bug Fixes
+
+* Fixed git-code.check.dirty and git-code.fix.dirty `cd to null directory` error
+
+
+---
+
 ## [1.7.2](https://github.com/justcoded/git-extras/compare/v1.7.1...v1.7.2) (2025-05-16)
 ### Bug Fixes
 
